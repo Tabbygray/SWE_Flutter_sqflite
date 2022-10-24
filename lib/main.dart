@@ -35,20 +35,20 @@ class _SqliteAppState extends State<SqliteApp> {
         )),
         body: Center(
           child: FutureBuilder<List<Grocery>>(
-              future: DatabaseHelper.instance.getGroceries(),
-              builder: (BuildContext context,
+              future: DatabaseHelper.instance.getGroceries(), // 로딩하고자 하는것
+              builder: (BuildContext context, // 로딩전에 보이는것
                   AsyncSnapshot<List<Grocery>> snapshot) {
                 if (!snapshot.hasData) {
                   return Center(child: Text('Loading'));
                 }
                 return snapshot.data!.isEmpty
-                    ? Center(child: Text('No Groceries in List'))
+                    ? Center(child: Text('No Items in List'))
                     : ListView(
                         children: snapshot.data!.map((grocery) {
                           return Center(
                             child: Card(
                               color: selectedId == grocery.id // 선택한 list 색 회색으로
-                                  ? Colors.white70 
+                                  ? Colors.white70
                                   : Colors.white,
                               child: ListTile(
                                 title: Text(grocery.name),
@@ -74,16 +74,16 @@ class _SqliteAppState extends State<SqliteApp> {
                           );
                         }).toList(),
                       );
-              }),
+              }), // 서버에서 데이터 받아오기전 미리 render
         ),
-        floatingActionButton: FloatingActionButton( //액션버튼
-          child: Icon(Icons.save),
+        floatingActionButton: FloatingActionButton.extended( //액션버튼
+          icon: Icon(Icons.save),
           onPressed: () async {
-            selectedId != null
-                ? await DatabaseHelper.instance.update(
+            selectedId != null // 선택된 리스트의 아이템이 존재하나요?
+                ? await DatabaseHelper.instance.update( // 있으면 update
               Grocery(id: selectedId, name: textController.text),
             )
-                :await DatabaseHelper.instance.add(
+                :await DatabaseHelper.instance.add( // 없으면 ADD
               Grocery(name: textController.text),
             );
             setState(() {
@@ -91,6 +91,7 @@ class _SqliteAppState extends State<SqliteApp> {
               selectedId = null;
             });
           },
+          label:Text('저장/갱신'),
         ),
       ),
     );
@@ -152,17 +153,17 @@ class DatabaseHelper {
     return groceryList;
   }
 
-  Future<int> add(Grocery grocery) async {
+  Future<int> add(Grocery grocery) async { // 리스트에 아이템 추가
     Database db = await instance.database;
     return await db.insert('groceries', grocery.toMap());
   }
 
-  Future<int> remove(int id) async {
+  Future<int> remove(int id) async { // 리스트에서 아이템 제거 
     Database db = await instance.database;
     return await db.delete('groceries', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<int> update(Grocery grocery) async {
+  Future<int> update(Grocery grocery) async { // 리스트 내용 업데이트
     Database db = await instance.database;
     return await db.update('groceries', grocery.toMap(),
         where: "id = ?", whereArgs: [grocery.id]);
