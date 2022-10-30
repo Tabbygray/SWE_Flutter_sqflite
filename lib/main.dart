@@ -4,6 +4,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_initalize/main.dart';
+import 'package:flutter_initalize/recipt_screen.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -79,71 +80,96 @@ class _SqliteAppState extends State<SqliteApp> {
                       );
               }), // 서버에서 데이터 받아오기전 미리 render
         ),
-        floatingActionButton: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton.extended(
-              //액션버튼 1 -> 레시피보기
-              icon: Icon(Icons.local_restaurant),
-              onPressed: () async {
-                selectedId != null // 선택된 리스트의 아이템이 존재하나요?
-                    ? await DatabaseHelper.instance.update(
-                        // 있으면 update
-                        Grocery(
-                            id: selectedId,
-                            name: textController.text,
-                            recipe: 'reci'),
-                      )
-                    : await DatabaseHelper.instance.getlist();
-                setState(() {
-                  textController.clear();
-                  selectedId = null;
-                });
-              },
-              backgroundColor: Colors.deepOrange,
-              label: Text('레시피 보기'),
-            ),
-            FloatingActionButton.extended(
-              //액션버튼 2 -> DB조작용
-              icon: Icon(Icons.save),
-              onPressed: () async {
-                selectedId != null // 선택된 리스트의 아이템이 존재하나요?
-                    ? await DatabaseHelper.instance.update(
-                        // 있으면 update
-                        Grocery(
-                            id: selectedId,
-                            name: textController.text,
-                            recipe: 'reci'),
-                      )
-                    : await DatabaseHelper.instance.add(
-                        // 없으면 ADD
-                        Grocery(name: textController.text, recipe: 'reci'),
-                      );
-                setState(() {
-                  textController.clear();
-                  selectedId = null;
-                });
-              },
-              label: Text('저장/갱신'),
-            ),
-            FloatingActionButton(
-              //액션버튼 3 -> DB 초기내용 가져오기용
-              child: Icon(Icons.ramen_dining),
-              onPressed: () async {
-                List<dynamic> jsonData = await DatabaseHelper.instance.getlist();
-                for (int i = 0; i < jsonData.length; i++){
-                  await DatabaseHelper.instance.add(Grocery(name: jsonData[i]['name'], recipe: jsonData[i]['recipe']));
-                }
-                setState(() {
-                  textController.clear();
-                  selectedId = null;
-                });
-              },
-            ),
-          ],
-        ),
+        floatingActionButton: Builder(// context 해제용 builder
+            builder: (context) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton.extended(
+                //액션버튼 1 -> 레시피보기
+                icon: Icon(Icons.local_restaurant),
+                onPressed: () async {
+                  selectedId != null // 선택된 리스트의 아이템이 존재하나요?
+                      ? Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ReciptScreen()),
+                        )
+                      : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("레시피를 선택해주세요!"),
+                          duration: Duration(seconds: 2),
+                          action: SnackBarAction(
+                            label: "닫기",
+                            onPressed: () {},
+                          ),
+                        ));
+                  setState(() {
+                    textController.clear();
+                    selectedId = null;
+                  });
+                },
+                backgroundColor: Colors.deepOrange,
+                label: Text('레시피 보기'),
+              ),
+              FloatingActionButton.extended(
+                //액션버튼 2 -> DB조작용
+                icon: Icon(Icons.save),
+                onPressed: () async {
+                  selectedId != null // 선택된 리스트의 아이템이 존재하나요?
+                      ? await DatabaseHelper.instance.update(
+                          // 있으면 update
+                          Grocery(
+                              id: selectedId,
+                              name: textController.text,
+                              recipe: 'reci'),
+                        )
+                      : await DatabaseHelper.instance.add(
+                          // 없으면 ADD
+                          Grocery(name: textController.text, recipe: 'reci'),
+                        );
+                  setState(() {
+                    textController.clear();
+                    selectedId = null;
+                  });
+                },
+                label: Text('저장/갱신'),
+              ),
+              FloatingActionButton(
+                //액션버튼 3 -> DB 초기내용 가져오기용
+                child: Icon(Icons.ramen_dining),
+                onPressed: () async {
+                  List<dynamic> jsonData =
+                      await DatabaseHelper.instance.getlist();
+                  for (int i = 0; i < jsonData.length; i++) {
+                    await DatabaseHelper.instance.add(Grocery(
+                        name: jsonData[i]['name'],
+                        recipe: jsonData[i]['recipe']));
+                  }
+                  setState(() {
+                    textController.clear();
+                    selectedId = null;
+                  });
+                },
+              ),
+            ],
+          );
+        }),
       ),
     );
+  } // end of build()
+
+}
+
+class NavigatorWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: OutlinedButton(
+            child: Text("foo"),
+            onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ReciptScreen()),
+                )));
   }
 }
 
@@ -230,15 +256,17 @@ class DatabaseHelper {
     return grocery;
   }
 
-  Future <List<dynamic>> getlist() async {
+  Future<List<dynamic>> getlist() async {
+    // Json String to List
     print('test');
     String jsonString = await loadAsset();
     List<dynamic> jsonData = jsonDecode(jsonString);
     return jsonData;
     print(jsonData[0]['id']);
-
   }
-  Future<String> loadAsset() async { // 파일 읽어오기
+
+  Future<String> loadAsset() async {
+    // 파일 읽어오기
     return await rootBundle.loadString('assets/main_recipe.json');
   }
 }
