@@ -55,7 +55,7 @@ class _SqliteAppState extends State<SqliteApp> {
                                   ? Colors.white70
                                   : Colors.white,
                               child: ListTile(
-                                title: Text(grocery.name + grocery.recipe),
+                                title: Text(grocery.name),
                                 onTap: () {
                                   //리스트 터치하면 textController에 터치한 내용 반영
                                   setState(() {
@@ -89,11 +89,21 @@ class _SqliteAppState extends State<SqliteApp> {
                 //액션버튼 1 -> 레시피보기
                 icon: Icon(Icons.local_restaurant),
                 onPressed: () async {
+                  String reciptData = "";
+                  String recipeName = "";
+                  List<dynamic> jsonData =
+                  await DatabaseHelper.instance.getlist();
+                  for (int i = 0; i < jsonData.length; i++) {
+                    if(jsonData[i]['id'] == selectedId) {
+                      recipeName = jsonData[i]['name'];
+                      reciptData = jsonData[i]['recipe'];
+                    }
+                  }
                   selectedId != null // 선택된 리스트의 아이템이 존재하나요?
                       ? Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const ReciptScreen()),
+                              builder: (context) => ReciptScreen(recipeName,reciptData)),
                         )
                       : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("레시피를 선택해주세요!"),
@@ -132,7 +142,7 @@ class _SqliteAppState extends State<SqliteApp> {
                     selectedId = null;
                   });
                 },
-                label: Text('저장/갱신'),
+                label: Text(''),
               ),
               FloatingActionButton(
                 //액션버튼 3 -> DB 초기내용 가져오기용
@@ -157,20 +167,6 @@ class _SqliteAppState extends State<SqliteApp> {
       ),
     );
   } // end of build()
-
-}
-
-class NavigatorWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-        child: OutlinedButton(
-            child: Text("foo"),
-            onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ReciptScreen()),
-                )));
-  }
 }
 
 class Grocery {
@@ -223,7 +219,7 @@ class DatabaseHelper {
       ''');
   }
 
-  Future<List<Grocery>> getGroceries() async {
+  Future<List<Grocery>> getGroceries() async { // DB 불러오기
     Database db = await instance.database;
     var groceries = await db.query('groceries', orderBy: 'name');
     List<Grocery> groceryList = groceries.isNotEmpty
@@ -262,7 +258,6 @@ class DatabaseHelper {
     String jsonString = await loadAsset();
     List<dynamic> jsonData = jsonDecode(jsonString);
     return jsonData;
-    print(jsonData[0]['id']);
   }
 
   Future<String> loadAsset() async {
