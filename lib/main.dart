@@ -91,19 +91,22 @@ class _SqliteAppState extends State<SqliteApp> {
                 onPressed: () async {
                   String reciptData = "";
                   String recipeName = "";
+                  String recipeTags = "";
                   List<dynamic> jsonData =
-                  await DatabaseHelper.instance.getlist();
+                      await DatabaseHelper.instance.getlist();
                   for (int i = 0; i < jsonData.length; i++) {
-                    if(jsonData[i]['id'] == selectedId) {
+                    if (jsonData[i]['id'] == selectedId) {
                       recipeName = jsonData[i]['name'];
                       reciptData = jsonData[i]['recipe'];
+                      recipeTags = jsonData[i]['tags'];
                     }
                   }
                   selectedId != null // 선택된 리스트의 아이템이 존재하나요?
                       ? Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ReciptScreen(recipeName,reciptData)),
+                              builder: (context) => ReciptScreen(
+                                  recipeName, reciptData, recipeTags)),
                         )
                       : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("레시피를 선택해주세요!"),
@@ -131,11 +134,15 @@ class _SqliteAppState extends State<SqliteApp> {
                           Grocery(
                               id: selectedId,
                               name: textController.text,
-                              recipe: 'reci'),
+                              recipe: 'Test recipe',
+                              tags: '#test'),
                         )
                       : await DatabaseHelper.instance.add(
                           // 없으면 ADD
-                          Grocery(name: textController.text, recipe: 'reci'),
+                          Grocery(
+                              name: textController.text,
+                              recipe: 'Test recipe',
+                              tags: '#test'),
                         );
                   setState(() {
                     textController.clear();
@@ -153,7 +160,8 @@ class _SqliteAppState extends State<SqliteApp> {
                   for (int i = 0; i < jsonData.length; i++) {
                     await DatabaseHelper.instance.add(Grocery(
                         name: jsonData[i]['name'],
-                        recipe: jsonData[i]['recipe']));
+                        recipe: jsonData[i]['recipe'],
+                        tags: jsonData[i]['tags']));
                   }
                   setState(() {
                     textController.clear();
@@ -173,13 +181,16 @@ class Grocery {
   final int? id;
   final String name;
   final String recipe;
+  final String tags;
 
-  Grocery({this.id, required this.name, required this.recipe});
+  Grocery(
+      {this.id, required this.name, required this.recipe, required this.tags});
 
   factory Grocery.fromMap(Map<String, dynamic> json) => new Grocery(
         id: json['id'],
         name: json['name'],
         recipe: json['recipe'],
+        tags: json['tags'],
       );
 
   Map<String, dynamic> toMap() {
@@ -187,6 +198,7 @@ class Grocery {
       'id': id,
       'name': name,
       'recipe': recipe,
+      'tags': tags,
     };
   }
 }
@@ -214,14 +226,17 @@ class DatabaseHelper {
       CREATE TABLE groceries(
           id INTEGER PRIMARY KEY,
           name TEXT,
-          recipe TEXT
+          recipe TEXT,
+          tags TEXT
       )
       ''');
   }
 
-  Future<List<Grocery>> getGroceries() async { // DB 불러오기
+  Future<List<Grocery>> getGroceries() async {
+    // DB 불러오기
     Database db = await instance.database;
     var groceries = await db.query('groceries', orderBy: 'name');
+    print("test");
     List<Grocery> groceryList = groceries.isNotEmpty
         ? groceries.map((c) => Grocery.fromMap(c)).toList()
         : [];
@@ -248,7 +263,8 @@ class DatabaseHelper {
   }
 
   Grocery fromJson(Map<String, dynamic> json) {
-    Grocery grocery = Grocery(name: json['name'], recipe: json['recipe']);
+    Grocery grocery =
+        Grocery(name: json['name'], recipe: json['recipe'], tags: json['tags']);
     return grocery;
   }
 

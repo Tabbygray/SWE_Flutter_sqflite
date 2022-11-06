@@ -3,7 +3,8 @@ import "package:flutter/material.dart";
 class ReciptScreen extends StatelessWidget {
   final String recipeName;
   final String reciptData;
-  const ReciptScreen(this.recipeName, this.reciptData);
+  final String recipeTags;
+  const ReciptScreen(this.recipeName, this.reciptData, this.recipeTags);
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +20,10 @@ class ReciptScreen extends StatelessWidget {
             Container( // 레시피 내용 들어가는 컨테이너
               color: Colors.white,
                 child: Text('레시피 : $reciptData')
+            ),
+            Container(
+              color: Colors.white,
+              child: Text('태그 : $recipeTags'),
             ),
             ElevatedButton(
               child: Text('돌아가기'),
