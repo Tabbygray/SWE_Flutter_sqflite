@@ -3,7 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_initalize/recipt_screen.dart';
 import 'package:flutter_initalize/search_by_name.dart';
+import 'package:flutter_initalize/search_by_tags.dart';
 
 void main() => runApp(MyApp());
 
@@ -70,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundColor: Colors.orange
                 ),
                 onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SqliteApp())),
+                    MaterialPageRoute(builder: (context) => SqliteApp_Tags())),
                 child: Text("태그로 검색")),
           ],
         ),
