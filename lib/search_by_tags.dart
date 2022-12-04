@@ -88,6 +88,7 @@ class _SqliteApp_TagsState extends State<SqliteApp_Tags> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               FloatingActionButton.extended(
+                heroTag: null,
                 //액션버튼 1 -> 레시피보기
                 icon: Icon(Icons.local_restaurant),
                 onPressed: () async {
@@ -127,17 +128,29 @@ class _SqliteApp_TagsState extends State<SqliteApp_Tags> {
                 label: Text('레시피 보기'),
               ),
               FloatingActionButton.extended(
+                heroTag: null,
                 //액션버튼 2 -> 검색용
                 icon: Icon(Icons.search),
                 onPressed: () async {
                   String search = "#" + textController.text;
                   List<int> searchResult =
                       DatabaseHelper.groceryBag.searchByTag(search);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SqliteApp_Tags_Results(searchResult)),
-                  );
+                  if(searchResult.isEmpty){
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("검색 결과가 없습니다!"),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: "닫기",
+                        onPressed: () {},
+                      ),
+                    ));
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SqliteApp_Tags_Results(searchResult)),
+                    );
+                  }
                   setState(() {
                     textController.clear();
                     selectedId = null;
@@ -146,6 +159,7 @@ class _SqliteApp_TagsState extends State<SqliteApp_Tags> {
                 label: Text('검색'),
               ),
               FloatingActionButton(
+                heroTag: null,
                 //액션버튼 3 -> DB 초기내용 가져오기용
                 child: Icon(Icons.ramen_dining),
                 onPressed: () async {
@@ -323,7 +337,7 @@ class GroceryBag {
       for (var j = 0; j < tagsList.length; j++) {
         if (search == tagsList[j]) {
           doesExists = true;
-          result.add(i+1);
+          result.add(i+1); // json 파일에 1부터 작성되어 있어서
         }
       }
     }

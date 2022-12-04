@@ -230,8 +230,13 @@ class DatabaseHelper {
     // DB 불러오기
     // 이것이 future가 되서 뿌려진다
     Database db = await instance.database;
-
-    String whereToQuery = "id = "+ idList[0].toString();
+    print(idList);
+    String whereToQuery = "";
+    for(var i =0; i< idList.length; i++){
+      whereToQuery += "id = " + idList[i].toString();
+      whereToQuery += (i == idList.length -1) ? "" : " or ";
+      // where id = 1 or 2
+    }
     print(whereToQuery);
     var groceries = await db.query('groceries',where: whereToQuery ,orderBy: 'id');
     List<Grocery> groceryList = groceries.isNotEmpty

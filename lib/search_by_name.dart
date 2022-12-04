@@ -34,8 +34,8 @@ class _SqliteAppState extends State<SqliteApp> {
       home: Scaffold(
         appBar: AppBar(
             title: TextField(
-              controller: textController,
-            )),
+          controller: textController,
+        )),
         body: Center(
           child: FutureBuilder<List<Grocery>>(
               future: DatabaseHelper.instance.getGroceries(), // 로딩하고자 하는것
@@ -47,130 +47,130 @@ class _SqliteAppState extends State<SqliteApp> {
                 return snapshot.data!.isEmpty
                     ? Center(child: Text('No Items in List'))
                     : ListView(
-                  children: snapshot.data!.map((grocery) {
-                    return Center(
-                      child: Card(
-                        color: selectedId == grocery.id // 선택한 list 색 회색으로
-                            ? Colors.white70
-                            : Colors.white,
-                        child: ListTile(
-                          title: Text(grocery.name),
-                          onTap: () {
-                            //리스트 터치하면 textController에 터치한 내용 반영
-                            setState(() {
-                              if (selectedId == null) {
-                                textController.text = grocery.name;
-                                selectedId = grocery.id;
-                              } else {
-                                textController.text = '';
-                                selectedId = null;
-                              }
-                            });
-                          },
-                          onLongPress: () {
-                            setState(() {
-                              DatabaseHelper.instance.remove(grocery.id!);
-                            });
-                          },
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                );
+                        children: snapshot.data!.map((grocery) {
+                          return Center(
+                            child: Card(
+                              color: selectedId == grocery.id // 선택한 list 색 회색으로
+                                  ? Colors.white70
+                                  : Colors.white,
+                              child: ListTile(
+                                title: Text(grocery.name),
+                                onTap: () {
+                                  //리스트 터치하면 textController에 터치한 내용 반영
+                                  setState(() {
+                                    if (selectedId == null) {
+                                      textController.text = grocery.name;
+                                      selectedId = grocery.id;
+                                    } else {
+                                      textController.text = '';
+                                      selectedId = null;
+                                    }
+                                  });
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    DatabaseHelper.instance.remove(grocery.id!);
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
               }), // 서버에서 데이터 받아오기전 미리 render
         ),
         floatingActionButton: Builder(// context 해제용 builder
             builder: (context) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FloatingActionButton.extended(
-                    //액션버튼 1 -> 레시피보기
-                    icon: Icon(Icons.local_restaurant),
-                    onPressed: () async {
-                      String reciptData = "";
-                      String recipeName = "";
-                      String recipeTags = "";
-                      List<dynamic> jsonData =
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton.extended(
+                //액션버튼 1 -> 레시피보기
+                icon: Icon(Icons.local_restaurant),
+                onPressed: () async {
+                  String reciptData = "";
+                  String recipeName = "";
+                  String recipeTags = "";
+                  List<dynamic> jsonData =
                       await DatabaseHelper.instance.getlist();
-                      for (int i = 0; i < jsonData.length; i++) {
-                        if (jsonData[i]['id'] == selectedId) {
-                          recipeName = jsonData[i]['name'];
-                          reciptData = jsonData[i]['recipe'];
-                          recipeTags = jsonData[i]['tags'];
-                        }
-                      }
-                      selectedId != null // 선택된 리스트의 아이템이 존재하나요?
-                          ? Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ReciptScreen(
-                                recipeName, reciptData, recipeTags)),
-                      )
-                          : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text("레시피를 선택해주세요!"),
-                        duration: Duration(seconds: 2),
-                        action: SnackBarAction(
-                          label: "닫기",
-                          onPressed: () {},
-                        ),
-                      ));
-                      setState(() {
-                        textController.clear();
-                        selectedId = null;
-                      });
-                    },
-                    backgroundColor: Colors.deepOrange,
-                    label: Text('레시피 보기'),
-                  ),
-                  FloatingActionButton.extended(
-                    //액션버튼 2 -> DB조작용
-                    icon: Icon(Icons.save),
-                    onPressed: () async {
-                      selectedId != null // 선택된 리스트의 아이템이 존재하나요?
-                          ? await DatabaseHelper.instance.update(
-                        // 있으면 update
-                        Grocery(
-                            id: selectedId,
-                            name: textController.text,
-                            recipe: 'Test recipe',
-                            tags: '#test'),
-                      )
-                          : await DatabaseHelper.instance.add(
-                        // 없으면 ADD
-                        Grocery(
-                            name: textController.text,
-                            recipe: 'Test recipe',
-                            tags: '#test'),
-                      );
-                      setState(() {
-                        textController.clear();
-                        selectedId = null;
-                      });
-                    },
-                    label: Text(''),
-                  ),
-                  FloatingActionButton(
-                    //액션버튼 3 -> DB 초기내용 가져오기용
-                    child: Icon(Icons.ramen_dining),
-                    onPressed: () async {
-                      List<dynamic> jsonData =
+                  for (int i = 0; i < jsonData.length; i++) {
+                    if (jsonData[i]['id'] == selectedId) {
+                      recipeName = jsonData[i]['name'];
+                      reciptData = jsonData[i]['recipe'];
+                      recipeTags = jsonData[i]['tags'];
+                    }
+                  }
+                  selectedId != null // 선택된 리스트의 아이템이 존재하나요?
+                      ? Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ReciptScreen(
+                                  recipeName, reciptData, recipeTags)),
+                        )
+                      : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("레시피를 선택해주세요!"),
+                          duration: Duration(seconds: 2),
+                          action: SnackBarAction(
+                            label: "닫기",
+                            onPressed: () {},
+                          ),
+                        ));
+                  setState(() {
+                    textController.clear();
+                    selectedId = null;
+                  });
+                },
+                backgroundColor: Colors.deepOrange,
+                label: Text('레시피 보기'),
+              ),
+              FloatingActionButton.extended(
+                //액션버튼 2 -> DB조작용
+                icon: Icon(Icons.save),
+                onPressed: () async {
+                  selectedId != null // 선택된 리스트의 아이템이 존재하나요?
+                      ? await DatabaseHelper.instance.update(
+                          // 있으면 update
+                          Grocery(
+                              id: selectedId,
+                              name: textController.text,
+                              recipe: 'Test recipe',
+                              tags: '#test'),
+                        )
+                      : await DatabaseHelper.instance.add(
+                          // 없으면 ADD
+                          Grocery(
+                              name: textController.text,
+                              recipe: 'Test recipe',
+                              tags: '#test'),
+                        );
+                  setState(() {
+                    textController.clear();
+                    selectedId = null;
+                  });
+                },
+                label: Text(''),
+              ),
+              FloatingActionButton(
+                //액션버튼 3 -> DB 초기내용 가져오기용
+                child: Icon(Icons.ramen_dining),
+                onPressed: () async {
+                  List<dynamic> jsonData =
                       await DatabaseHelper.instance.getlist();
-                      for (int i = 0; i < jsonData.length; i++) {
-                        await DatabaseHelper.instance.add(Grocery(
-                            name: jsonData[i]['name'],
-                            recipe: jsonData[i]['recipe'],
-                            tags: jsonData[i]['tags']));
-                      }
-                      setState(() {
-                        textController.clear();
-                        selectedId = null;
-                      });
-                    },
-                  ),
-                ],
-              );
-            }),
+                  for (int i = 0; i < jsonData.length; i++) {
+                    await DatabaseHelper.instance.add(Grocery(
+                        name: jsonData[i]['name'],
+                        recipe: jsonData[i]['recipe'],
+                        tags: jsonData[i]['tags']));
+                  }
+                  setState(() {
+                    textController.clear();
+                    selectedId = null;
+                  });
+                },
+              ),
+            ],
+          );
+        }),
       ),
     );
   } // end of build()
@@ -186,11 +186,11 @@ class Grocery {
       {this.id, required this.name, required this.recipe, required this.tags});
 
   factory Grocery.fromMap(Map<String, dynamic> json) => new Grocery(
-    id: json['id'],
-    name: json['name'],
-    recipe: json['recipe'],
-    tags: json['tags'],
-  );
+        id: json['id'],
+        name: json['name'],
+        recipe: json['recipe'],
+        tags: json['tags'],
+      );
 
   Map<String, dynamic> toMap() {
     return {
@@ -263,7 +263,7 @@ class DatabaseHelper {
 
   Grocery fromJson(Map<String, dynamic> json) {
     Grocery grocery =
-    Grocery(name: json['name'], recipe: json['recipe'], tags: json['tags']);
+        Grocery(name: json['name'], recipe: json['recipe'], tags: json['tags']);
     return grocery;
   }
 
